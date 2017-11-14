@@ -1,6 +1,6 @@
 var mysql = require("mysql");
 var inquirer = require('inquirer');
-
+var bodyparse = require('body-parser');
 
 var connection = mysql.createConnection({
   host: "localhost",
@@ -12,66 +12,56 @@ var connection = mysql.createConnection({
 
 connection.connect(function(err) {
     if (err) throw err;
-    console.log("connected as id " + connection.threadId + "\n")
-    runSearch();
+    console.log("connected as id " + connection.threadId + "\n");
+    itemList();
 });
 
-var runSearch = function() {
-    inquirer
-      .prompt([
-          {
-          
+
+var itemList = function () {
+    connection.query("SELECT * FROM products", function(err, results){
+    if (err) throw err;
+    console.log(JSON.stringify(results, null, 2));
+ 
+    start();
+    })
+};
+
+var start = function() {
+   inquirer
+    .prompt([
+        {
         name: "itemID",
         type: "input",
-        message: "What is the ID of the product you are purchasing?"
+        message: "What is the ID of the product you are purchasing?",
        }, {
         name: "units",
         type: "input",
-        message: "How many units do you want?"
-    }]).then(function(answer){
-        var query = 'SELECT * FROM products WHERE ?';
-        var item = answer.itemID;
-        var units = answer.units;
-        connection.query(query, {item_id: item}, function(err, data) {
+        message: "How many units do you want?",
+       }
+       ]).then(function(answer){
+        connection.query("SELECT * FROM products",  function(err, results){
             if (err) throw err;
-        
-				console.log('ERROR: Invalid Item ID. Please select a valid Item ID.');
-				runSearch(); 
-                if (units <= data.stock_quantity) {
-					
-                    var updateQuery = 'UPDATE products SET stock_quantity = ' + (data.stock_quantity - quantity) 
-                    + ' WHERE item_id = ' + item;
-                    console.log('updateQuery = ' + updateQuery);
-                    connection.end();
-					connection.query(updateQuery, function(err, data) {
-                        if (err) throw err
-                        console.log("Order has been placed!");
-                            
-					}) 
-                } else {
-                    connection.end()
-                    console.log('Sorry, there is not enough product in stock, your order can not be placed as is.')
-                    runSearch();
-
-                }
+            var chosenItem;
+            for (var i = 0; i < results.length; i++) {
+              if (results[i].item_ID === answer.itemID) {
+                chosenItem = results[i];
+              }
+            }
+    
+            var updateQuery = 'UPDATE products SET stock_quantity = ' + (chosenItem.stock_quantity - answer.units) 
+            + ' WHERE item_id = ' + answer.itemID;
+            if (answer.units <= results.stock_quantity) { 
+                connection.query(updateQuery, function(err, data) {
+                     if (err) throw err;               
+                     console.log("Order has been placed!"); 
+                    });
+           } else{ 
+                console.log("Sorry, we do not have enough stock for the amount you would like.");
+                };
             })
         })
-    };
-    
+     };
 
 
-
-
-      
   
-
-
-
-
-/*Once the customer has placed the order, your application should check if your store has enough of the product to meet the customer's request.
-
-If not, the app should log a phrase like Insufficient quantity!, and then prevent the order from going through.
-However, if your store does have enough of the product, you should fulfill the customer's order.
-
-This means updating the SQL database to reflect the remaining quantity.
-Once the update goes through, show the customer the total cost of their purchase.*/
+        
