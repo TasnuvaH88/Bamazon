@@ -13,13 +13,13 @@ CREATE TABLE products(
 
 
 INSERT INTO products (product_name, department_name, price, stock_quantity)
-VALUES ("cat-petter", "pets", 20, 10);
+VALUES ("electronic cat-petter", "pets", 20, 25);
 
 INSERT INTO products (product_name, department_name, price, stock_quantity)
-VALUES ("anti-aging skin cream", "skincare", 35, 30) ;
+VALUES ("overnight skin care cream", "skincare", 35, 30) ;
 
 INSERT INTO products (product_name, department_name, price, stock_quantity)
-VALUES ("decorative string lights", "home", 20, 18);
+VALUES ("decorative string lights", "home decor", 20, 25);
 
 INSERT INTO products (product_name, department_name, price, stock_quantity)
 VALUES ("type-c cord", "electronics", 30, 50);
@@ -28,21 +28,20 @@ INSERT INTO products (product_name, department_name, price, stock_quantity)
 VALUES ("blender", "home", 28, 30);
 
 INSERT INTO products (product_name, department_name, price, stock_quantity)
-VALUES ("frying pan", "kitchen", 29, 10);
+VALUES ("frying pan", "kitchen", 29, 20);
 
 INSERT INTO products (product_name, department_name, price, stock_quantity)
-VALUES ("kitchen stool", "kitchen", 13, 15);
+VALUES ("kitchen stool", "kitchen", 13, 30);
 
 INSERT INTO products (product_name, department_name, price, stock_quantity)
-VALUES ("cardigan", "clothing", 20, 5);
+VALUES ("cardigan", "clothing", 20, 15);
 
 INSERT INTO products (product_name, department_name, price, stock_quantity)
-VALUES ("loveseat", "furniture", 299, 2);
+VALUES ("loveseat", "furniture", 299, 10);
 
 INSERT INTO products (product_name, department_name, price, stock_quantity)
-VALUES ("vacuum cleaner", "home", 125, 12);
+VALUES ("vacuum cleaner", "home", 125, 25);
 
 
 select * from products;
 
-SELECT product_name FROM products WHERE item_id = ?
