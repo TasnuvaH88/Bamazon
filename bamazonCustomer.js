@@ -21,12 +21,14 @@ var itemList = function () {
     connection.query("SELECT * FROM products", function(err, results){
     if (err) throw err;
     console.log(JSON.stringify(results, null, 2));
+    start(results);
  
-    start();
+    
     })
+    
 };
 
-var start = function() {
+var start = function(results) {
    inquirer
     .prompt([
         {
@@ -39,29 +41,33 @@ var start = function() {
         message: "How many units do you want?",
        }
        ]).then(function(answer){
-        connection.query("SELECT * FROM products",  function(err, results){
-            if (err) throw err;
-            var chosenItem;
-            for (var i = 0; i < results.length; i++) {
-              if (results[i].item_ID === answer.itemID) {
-                chosenItem = results[i];
+        var chosenItem;
+        for (var i = 0; i < results.length; i++) {
+         if (results[i].item_id === answer.itemID) {
+         chosenItem = results[i]; 
+          } 
+        }
+        if (parseInt(answer.units) <= chosenItem.stock_quantity){
+            connection.query(
+                "UPDATE products SET ? WHERE ?",
+            [{
+                stock_quantity: 3
+              },
+              {
+                item_id: answer.itemID
+              }],
+              function(error) {
+                if (error) throw err;
+                console.log("Bid placed successfully!");
               }
-            }
-    
-            var updateQuery = 'UPDATE products SET stock_quantity = ' + (chosenItem.stock_quantity - answer.units) 
-            + ' WHERE item_id = ' + answer.itemID;
-            if (answer.units <= results.stock_quantity) { 
-                connection.query(updateQuery, function(err, data) {
-                     if (err) throw err;               
-                     console.log("Order has been placed!"); 
-                    });
-           } else{ 
-                console.log("Sorry, we do not have enough stock for the amount you would like.");
-                };
-            })
+            );
+          } else { 
+            console.log("Sorry, not enough stock. Try a different amount.");
+            start();
+            };
         })
-     };
+    };
+ 
 
 
-  
-        
+          
