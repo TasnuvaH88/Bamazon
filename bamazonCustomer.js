@@ -10,15 +10,18 @@ var connection = mysql.createConnection({
   database: "bamazon"
 });
 
+//Initiates connection and logs sucess. Proceeds to the selectOrder() function.
 connection.connect(function(err) {
     if (err) throw err;
     console.log("connected as id " + connection.threadId + "\n");
-    
-    itemList();
+    selectOrder();
 });
 
 
-var itemList = function () {
+//Displays all the items and prompts user to select item ID and quantity.
+//It then runs the promise and captures each answer in variables which 
+//are then passed as parameters to the purchaseOrder() function.
+var selectOrder = function () {
     connection.query("SELECT * FROM products", function(err, results) {
     if (err) throw err;
     console.log(JSON.stringify(results, null, 2));
@@ -41,6 +44,9 @@ var itemList = function () {
     })
 }
 
+//Handles the SQL queries based on answers received in selectOrder() function
+//Does basic calculations and compares the customer quantity selection to 
+//quantity available as per bamazonDB. 
 function purchaseOrder (itemID, quantityWanted) {
             connection.query('SELECT * FROM Products WHERE item_id = ' + itemID,
             function(err, res) {
@@ -57,12 +63,12 @@ function purchaseOrder (itemID, quantityWanted) {
                     }
                   ], function(err) {
                     if (err) throw err;
-                    console.log("Your order was successful!");
+                    console.log("Order was successful! Your total order is: $" + quantityWanted * res[0].price + "!");
                     connection.end();
                      })
                     } else {
                     console.log("Sorry, we are out of stock! Please try again!");
-                   itemList();
+                    selectOrder();
             }
         })
     };
