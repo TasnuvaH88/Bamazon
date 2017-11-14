@@ -13,23 +13,16 @@ var connection = mysql.createConnection({
 connection.connect(function(err) {
     if (err) throw err;
     console.log("connected as id " + connection.threadId + "\n");
+    
     itemList();
 });
 
 
 var itemList = function () {
-    connection.query("SELECT * FROM products", function(err, results){
+    connection.query("SELECT * FROM products", function(err, results) {
     if (err) throw err;
     console.log(JSON.stringify(results, null, 2));
-    start(results);
- 
-    
-    })
-    
-};
-
-var start = function(results) {
-   inquirer
+    inquirer
     .prompt([
         {
         name: "itemID",
@@ -41,33 +34,37 @@ var start = function(results) {
         message: "How many units do you want?",
        }
        ]).then(function(answer){
-        var chosenItem;
-        for (var i = 0; i < results.length; i++) {
-         if (results[i].item_id === answer.itemID) {
-         chosenItem = results[i]; 
-          } 
-        }
-        if (parseInt(answer.units) <= chosenItem.stock_quantity){
-            connection.query(
-                "UPDATE products SET ? WHERE ?",
-            [{
-                stock_quantity: 3
-              },
-              {
-                item_id: answer.itemID
-              }],
-              function(error) {
-                if (error) throw err;
-                console.log("Bid placed successfully!");
-              }
-            );
-          } else { 
-            console.log("Sorry, not enough stock. Try a different amount.");
-            start();
-            };
+         var chosenProd = answer.itemID;
+         var quantity = answer.units;
+         purchaseOrder(chosenProd, quantity);
+       });
+    })
+}
+
+function purchaseOrder (itemID, quantityWanted) {
+            connection.query('SELECT * FROM Products WHERE item_id = ' + itemID,
+            function(err, res) {
+            if (err)throw err;
+            if (parseInt(quantityWanted) <= res[0].stock_quantity) {
+                var newQuant = res[0].stock_quantity - parseInt(quantityWanted)
+                connection.query('UPDATE products SET ? WHERE ?',
+                [
+                    {
+                      stock_quantity: newQuant
+                    },
+                    {
+                      item_id: itemID
+                    }
+                  ], function(err) {
+                    if (err) throw err;
+                    console.log("Your order was successful!");
+                    connection.end();
+                     })
+                    } else {
+                    console.log("Sorry, we are out of stock! Please try again!");
+                   itemList();
+            }
         })
     };
- 
-
-
-          
+    
+    
